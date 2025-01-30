@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import streamlit as st
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, roc_auc_score
@@ -49,8 +50,11 @@ y_pred_prob = model.predict_proba(X_test)[:, 1]
 accuracy = accuracy_score(y_test, (y_pred_prob > 0.5).astype(int))
 roc_auc = roc_auc_score(y_test, y_pred_prob)
 
-print(f"Model Accuracy: {accuracy:.2%}")
-print(f"ROC AUC Score: {roc_auc:.2%}")
+# Streamlit App
+st.title("Employee Attrition Prediction")
+
+st.write(f"Model Accuracy: {accuracy:.2%}")
+st.write(f"ROC AUC Score: {roc_auc:.2%}")
 
 # Function to predict attrition probability
 def predict_attrition(employee_data):
@@ -60,14 +64,12 @@ def predict_attrition(employee_data):
     df_input = df_input.reindex(columns=X.columns, fill_value=0)  # Ensure same feature set
     
     probability = model.predict_proba(df_input)[:, 1][0]
-    return f"Estimated Attrition Probability: {probability * 100:.2f}%"
+    return probability * 100
 
-# Example employee input
-example_employee = {
-    "Gender": "Male", "Age": 30, "Tenure (Years)": 5,
-    "Designation/Level": "L6A", "Last Performance Rating": 3,
-    "College Tier": "Tier 1", "Industry Sector": "IT",
-    "Previous Experience Type": "MNC"
-}
-
-print(predict_attrition(example_employee))
+# Streamlit UI
+employee_data = st.text_area("Enter employee details as JSON:")
+if employee_data:
+    import json
+    employee_data = json.loads(employee_data)
+    probability = predict_attrition(employee_data)
+    st.write(f"Estimated Attrition Probability: {probability:.2f}%")
